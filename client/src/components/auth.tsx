@@ -38,7 +38,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } catch (error) {
         setIsLoggedIn(false);
         console.log("Check auth failed", error);
-        throw new Error("Check auth failed");
       }
     };
 

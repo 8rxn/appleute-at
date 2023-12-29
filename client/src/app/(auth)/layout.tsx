@@ -6,11 +6,9 @@ type Props = {
 
 const AuthLayout = ({ children }: Props) => {
   return (
-    <main className="min-h-screen flex flex-col justify-center items-center">
-      <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900">
+      <div className="p-4 rounded-lg bg-secondary">
         {children}
       </div>
-    </main>
   );
 };
 
