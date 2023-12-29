@@ -27,7 +27,7 @@ export class OrderController {
 
   @UseGuards(JwtGuard)
   @Get('')
-  async getOrdders(@Req() req) {
+  async getOrders(@Req() req) {
     const userId = req.user.id;
     return this.orderService.getOrders(userId);
   }
