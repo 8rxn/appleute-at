@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -9,15 +10,16 @@ import {
 } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { JwtGuard } from 'src/auth/guards/jwt-auth.guard';
+import { AddToCartDto, DeleteFromCartDto } from './dto/cart.dto';
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @UseGuards(JwtGuard)
-  @Post(':productId')
-  async addToCart(@Req() req, @Param('productId') productIds: number[]) {
+  @Post('')
+  async addToCart(@Req() req, @Body() addToCartDto: AddToCartDto) {
     const userId = req.user.id;
-    return this.cartService.addToCart(userId, productIds);
+    return this.cartService.addToCart(userId, addToCartDto.productIds);
   }
 
   @UseGuards(JwtGuard)
@@ -28,10 +30,13 @@ export class CartController {
   }
 
   @UseGuards(JwtGuard)
-  @Delete(':productId')
-  async removeFromCart(@Req() req, @Param('productId') productId: number) {
+  @Delete('')
+  async removeFromCart(
+    @Req() req,
+    @Body() deleteFromCartDto: DeleteFromCartDto,
+  ) {
     const userId = req.user.id;
-    return this.cartService.removeFromCart(userId, productId);
+    return this.cartService.removeFromCart(userId, deleteFromCartDto.productId);
   }
 
   @UseGuards(JwtGuard)

@@ -36,9 +36,16 @@ export class OrderService {
       amount: prod.price,
     }));
 
+    order.orderAmount = order.orderDetails.reduce(
+      (total, product) => total + product.amount,
+      0,
+    );
+
     await this.orderRepo.save(this.orderRepo.create(order));
 
-    // await this.cartRepo.update(cartId, { products: [] });
+    for(const product of cart.products){
+      await this.cartRepo.createQueryBuilder().relation(Cart, "products").of(cart).remove(product);
+    }
 
     return order;
   }

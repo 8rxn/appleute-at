@@ -17,4 +17,7 @@ export class Order {
 
   @Column()
   orderDate: string;
+
+  @Column()
+  orderAmount: number;
 }

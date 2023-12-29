@@ -16,20 +16,33 @@ export class CartService {
     let cart = await this.cartRepo.findOne({
       where: { user: { id: userId } },
     });
+    if (!productIds) {
+      console.log(productIds);
+      throw new Error('prodcut ids cant find');
+      return 'error';
+    }
     if (!cart) {
       throw new Error('Cart Not Found');
     }
+    console.log('product Ids', productIds);
 
-    const products = await this.productRepo.find({
-      where: productIds.map((pId) => ({ id: pId })),
-    });
+    let products = [];
+    for (const id of productIds) {
+      let product = await this.productRepo.findOne({ where: { id: id } });
+      products.push(product);
+    }
+
     if (!products) {
       throw new Error('Product Not Found');
     }
 
-    this.cartRepo.update(cart.id, {
-      products: [...(await cart.products), ...products],
-    });
+    for (const prod of products) {
+      this.cartRepo
+        .createQueryBuilder()
+        .relation(Cart, 'products')
+        .of(cart)
+        .add({ id: prod.id });
+    }
 
     await this.cartRepo.save(cart);
 
@@ -45,14 +58,14 @@ export class CartService {
       throw new Error('Cart Not Found');
     }
 
-    const productIndex = (await cart.products).findIndex(
-      (product) => product.id === productId,
-    );
+
+    const productIndex = cart.products.findIndex((p) => p.id == productId);
+    console.log(productIndex)
     if (productIndex === -1) {
-      throw new Error('Product Not Found in Cart');
+      throw new Error('Product not found in cart');
     }
 
-    (await cart.products).splice(productIndex, 1);
+    cart.products.splice(productIndex, 1);
 
     await this.cartRepo.save(cart);
 
@@ -64,7 +77,13 @@ export class CartService {
       where: { id: userId },
     });
 
-    return (await cart.products).splice(0, (await cart.products).length);
+    for (const product of cart.products) {
+      await this.cartRepo
+        .createQueryBuilder()
+        .relation(Cart, 'products')
+        .of(cart)
+        .remove(product);
+    }
   }
 
   async getCart(userId: number) {

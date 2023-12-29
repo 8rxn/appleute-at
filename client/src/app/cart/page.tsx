@@ -34,45 +34,79 @@ const Cart = (props: Props) => {
       method: "POST",
       credentials: "include",
     });
-    const orderJson = await order.json();
-    console.log(orderJson);
+    if (order.ok) {
+      const orderJson = await order.json();
+      console.log(orderJson);
+      setCart({ id: null, products: [] });
+      return redirect("/orders");
+    }
+  };
+
+  const total = cart.products?.reduce(
+    (total, product) => total + product.price,
+    0
+  );
+
+  const removeFromCart = async (id: string) => {
+    const res = await fetch(`http://localhost:3000/cart/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ productId: id }),
+      credentials: "include",
+    });
+    if (res.ok) {
+      const cart = await res.json();
+      setCart(cart);
+    }
   };
 
   return (
     <div>
       <h1 className="w-full text-center mb-8 text-2xl font-bold">Cart</h1>
-      <div className="flex flex-col-reverse md:flex-row gap-8">
-        <div className="flex flex-col gap-4">
-          {cart.products?.map((product) => (
-            <CartCard
-              price={`$ ${product.price}`}
-              name={product.name}
-              imgSrc={product.imgSrc}
-              description={product.description}
-              id={product.id}
-            ></CartCard>
-          ))}
+      {cart.products.length > 0 && (
+        <div className="flex flex-col-reverse md:flex-row gap-8">
+          <div className="flex flex-col gap-4">
+            {cart.products?.map((product) => (
+              <CartCard
+                price={`$ ${product.price}`}
+                name={product.name}
+                imgSrc={product.imgSrc}
+                description={product.description}
+                id={product.id}
+                removeFromCart={removeFromCart}
+              ></CartCard>
+            ))}
+          </div>
+          <div className="flex flex-col bg-secondary p-4 rounded-lg h-fit gap-4">
+            <div className="flex flex-row justify-between gap-32">
+              <span className="text-sm font-semibold">Total</span>
+              <span className="text-base font-semibold">$ {total}</span>
+            </div>
+            <div className="flex flex-row justify-between gap-32">
+              <span className="text-sm font-semibold">Shipping</span>
+              <span className="text-base font-semibold">$ 10</span>
+            </div>
+            <div className="flex flex-row justify-between gap-32">
+              <span className="text-sm font-semibold">Tax</span>
+              <span className="text-base font-semibold">$ 10</span>
+            </div>
+            <div className="flex flex-row justify-between gap-32">
+              <span className="text-sm font-semibold">Total</span>
+              <span className="text-base font-semibold">$ {total + 20}</span>
+            </div>
+            <Button onClick={orderButtonClick}>Order</Button>
+          </div>
         </div>
-        <div className="flex flex-col bg-secondary p-4 rounded-lg h-fit gap-4">
-          <div className="flex flex-row justify-between gap-32">
-            <span className="text-sm font-semibold">Total</span>
-            <span className="text-base font-semibold">$ 100</span>
-          </div>
-          <div className="flex flex-row justify-between gap-32">
-            <span className="text-sm font-semibold">Shipping</span>
-            <span className="text-base font-semibold">$ 10</span>
-          </div>
-          <div className="flex flex-row justify-between gap-32">
-            <span className="text-sm font-semibold">Tax</span>
-            <span className="text-base font-semibold">$ 10</span>
-          </div>
-          <div className="flex flex-row justify-between gap-32">
-            <span className="text-sm font-semibold">Total</span>
-            <span className="text-base font-semibold">$ 120</span>
-          </div>
-          <Button onClick={orderButtonClick}>Order</Button>
+      )}
+
+      {cart.products.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-96">
+          <span className="text-2xl font-bold">Your cart is empty</span>
+          <span className="text-lg">Add some products to your cart</span>
         </div>
-      </div>
+      )}
     </div>
   );
 };

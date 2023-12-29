@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Card,
@@ -10,6 +12,9 @@ import {
 
 import { XIcon } from "lucide-react";
 
+import { useState, useEffect, useContext } from "react";
+import { AuthContext } from "./auth";
+
 import Image from "next/image";
 import { Button } from "./ui/button";
 type Props = {
@@ -21,6 +26,21 @@ type Props = {
 };
 
 const ProductCard = (props: Props) => {
+  const { user, isLoggedIn } = useContext(AuthContext);
+
+  const addToCart = async () => {
+    const res = await fetch(`http://localhost:3000/cart/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ productIds: [props.id] }),
+      credentials: "include",
+    });
+    const cart = await res.json();
+    console.log(cart);
+  };
+
   return (
     <Card className="w-fit mx-auto min-w-72">
       {/* <CardContent className="grid place-items-center"> */}
@@ -40,9 +60,11 @@ const ProductCard = (props: Props) => {
       </CardHeader>
       <CardFooter className="flex justify-between">
         <CardTitle>{props.price || "$ 0"}</CardTitle>
-        <Button variant={"default"}>
-          <span className="text-xs">Add to Cart</span>
-        </Button>
+        {isLoggedIn && (
+          <Button variant={"default"} onClick={addToCart}>
+            <span className="text-xs">Add to Cart</span>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
@@ -50,7 +72,11 @@ const ProductCard = (props: Props) => {
 
 export default ProductCard;
 
-export const CartCard = (props: Props) => {
+export const CartCard = (
+  props: Props & {
+    removeFromCart: (id: string) => void;
+  }
+) => {
   return (
     <Card className=" flex flex-row justify-between">
       {/* <CardContent className="grid place-items-center"> */}
@@ -67,7 +93,12 @@ export const CartCard = (props: Props) => {
         <CardDescription>{props.price || "Product price"}</CardDescription>
       </CardHeader>
       <CardFooter className="flex justify-between gap-6 ">
-        <Button variant={"secondary"}>
+        <Button
+          variant={"secondary"}
+          onClick={() => {
+            props.removeFromCart(props.id);
+          }}
+        >
           <XIcon className="w-4 h-4" />
         </Button>
       </CardFooter>
